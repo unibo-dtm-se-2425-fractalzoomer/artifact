@@ -13,11 +13,11 @@ class FractalZoomerUI:
         self.ymin, self.ymax = -1.5, 1.5
         self.max_iter = 50
 
-        # Canvas for drawing
-        self.canvas = tk.Canvas(self.root, width=self.width, height=self.height, bg="white")
+        # Create canvas for drawing fractal
+        self.canvas = tk.Canvas(self.root, width=800, height=550, bg="white")
         self.canvas.pack(fill="both", expand=True)
-
-        # Button panel
+        
+        # Frame for buttons
         button_frame = tk.Frame(self.root)
         button_frame.pack(fill="x")
         
@@ -29,11 +29,11 @@ class FractalZoomerUI:
         zoom_out_btn = tk.Button(button_frame, text="Zoom Out", command=self.zoom_out)
         zoom_out_btn.pack(side="left", padx=10, pady=10)
         
-        # Draw Mandelbrot on startup
-        self.draw_mandelbrot()
-        
-    def draw_mandelbrot(self):
-        self.canvas.delete("all")
+# Draw Mandelbrot on startup
+self.draw_mandelbrot()
+
+def draw_mandelbrot(self):
+        img = tk.PhotoImage(width=self.width, height=self.height)
         for x in range(self.width):
             for y in range(self.height):
                 cx = self.xmin + (x / self.width) * (self.xmax - self.xmin)
@@ -46,10 +46,12 @@ class FractalZoomerUI:
                     n += 1
                 shade = 255 - int(n * 255 / self.max_iter)
                 color = f'#{shade:02x}{shade:02x}{shade:02x}'
-                self.canvas.create_line(x, y, x+1, y, fill=color)
+                img.put(color, (x, y))
+    self.canvas.create_image((0, 0), anchor="nw", image=img)
+    self.canvas.image = img
+
                 
     def zoom_in(self):
-        # Shrink visible area to zoom in
         x_range = (self.xmax - self.xmin) * 0.5
         y_range = (self.ymax - self.ymin) * 0.5
         x_center = (self.xmax + self.xmin) / 2
@@ -61,7 +63,6 @@ class FractalZoomerUI:
         self.draw_mandelbrot()
         
     def zoom_out(self):
-        # Expand visible area to zoom out
         x_range = (self.xmax - self.xmin) * 2
         y_range = (self.ymax - self.ymin) * 2
         x_center = (self.xmax + self.xmin) / 2
@@ -76,6 +77,6 @@ def main():
     root = tk.Tk()
     app = FractalZoomerUI(root)
     root.mainloop()
-    
+
 if __name__ == "__main__":
     main()

@@ -3,8 +3,17 @@ import sys
 from pathlib import Path
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-if (PROJECT_ROOT / "ui").exists() and str(PROJECT_ROOT) not in sys.path:
+def _find_source_root(test_file: Path) -> Path:
+    """Return the nearest ancestor directory that contains the ``ui`` package."""
+
+    for candidate in (test_file.parent,) + tuple(test_file.parents):
+        if (candidate / "ui").is_dir():
+            return candidate
+    return test_file.parent
+
+
+PROJECT_ROOT = _find_source_root(Path(__file__).resolve())
+if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from ui.app import screen_to_complex, W, H

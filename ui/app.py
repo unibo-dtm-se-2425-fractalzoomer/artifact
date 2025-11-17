@@ -1,7 +1,13 @@
 import tkinter as tk
 from tkinter import ttk
-from PIL import Image, ImageTk
-import numpy as np
+try:
+    from PIL import Image, ImageTk
+except ImportError:  # pragma: no cover - optional dependency for tests
+    Image = ImageTk = None
+try:
+    import numpy as np
+except ImportError:  # pragma: no cover - optional dependency for tests
+    np = None
 import sys
 import os
 
@@ -16,9 +22,24 @@ from mandelbrot_core.burning_ship import BurningShipSet
 W, H = 600, 400
 MAX_ITER = 256
 
+def screen_to_complex(x, y, center_x, center_y, half_width, half_height,
+                      width=W, height=H):
+    """Map screen coordinates to the corresponding complex plane point."""
+    x_frac = x / width
+    y_frac = y / height
+
+    x_min = center_x - half_width
+    y_max = center_y + half_height
+
+    real = x_min + x_frac * (2 * half_width)
+    imag = y_max - y_frac * (2 * half_height)
+    return real, imag
+
 
 class FractalZoomerUI:
     def __init__(self, root):
+        if any(dep is None for dep in (Image, ImageTk, np)):
+            raise ImportError("Pillow and NumPy are required to run the Fractal Zoomer UI")
         self.root = root
         self.root.title("Fractal Zoomer")
         
@@ -92,7 +113,7 @@ class FractalZoomerUI:
         
         # Create coordinate arrays
         x_coords = np.linspace(x_min, x_max, W)
-        y_coords = np.linspace(y_min, y_max, H)
+        y_coords = np.linspace(y_max, y_min, H)
         
         # Create image array
         img_array = np.zeros((H, W), dtype=np.uint8)
@@ -124,14 +145,11 @@ class FractalZoomerUI:
         )
     
     def zoom_in(self, event):
-        x_frac = event.x / W
-        y_frac = event.y / H
-        
-        x_min = self.center_x - self.half_width
-        y_min = self.center_y - self.half_height
-        
-        click_x = x_min + x_frac * (2 * self.half_width)
-        click_y = y_min + y_frac * (2 * self.half_height)
+        click_x, click_y = screen_to_complex(
+            event.x, event.y,
+            self.center_x, self.center_y,
+            self.half_width, self.half_height
+        )
         
         zoom_factor = 0.9
         self.center_x = click_x
@@ -142,14 +160,11 @@ class FractalZoomerUI:
         self.render_fractal()
     
     def zoom_out(self, event):
-        x_frac = event.x / W
-        y_frac = event.y / H
-        
-        x_min = self.center_x - self.half_width
-        y_min = self.center_y - self.half_height
-        
-        click_x = x_min + x_frac * (2 * self.half_width)
-        click_y = y_min + y_frac * (2 * self.half_height)
+        click_x, click_y = screen_to_complex(
+            event.x, event.y,
+            self.center_x, self.center_y,
+            self.half_width, self.half_height
+        )
         
         zoom_factor = 1.0 / 0.9
         self.center_x = click_x
@@ -193,3 +208,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

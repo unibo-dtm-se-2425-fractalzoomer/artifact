@@ -14,7 +14,7 @@ from mandelbrot_core.burning_ship import BurningShipSet
 
 # Constants
 W, H = 600, 400
-MAX_ITER = 256
+MAX_ITER = 128
 
 def screen_to_complex(x, y, center_x, center_y, half_width, half_height,
                       width=W, height=H):

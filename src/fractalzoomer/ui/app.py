@@ -16,18 +16,36 @@ from mandelbrot_core.burning_ship import BurningShipSet
 W, H = 600, 400
 MAX_ITER = 128
 
-def screen_to_complex(x, y, center_x, center_y, half_width, half_height,
-                      width=W, height=H):
-    """Map screen coordinates to the corresponding complex plane point."""
-    x_frac = x / width
-    y_frac = y / height
+class Viewport:
+    def __init__(self, width, height):
+        self.__size = np.array([width, height], dtype=float)
+        self.__zoom = 1.0 / max(width, height)
+        self.viewport_center = self.__size / 2
 
-    x_min = center_x - half_width
-    y_max = center_y + half_height
-
-    real = x_min + x_frac * (2 * half_width)
-    imag = y_max - y_frac * (2 * half_height)
-    return real, imag
+    def to_complex_plane(self, x, y, center_x, center_y, half_width, half_height) -> np.complex64:
+        # Map to normalized viewport coordinates
+        x_frac = x / self.__size[0]
+        y_frac = y / self.__size[1]
+        
+        # Map to complex plane
+        x_min = center_x - half_width
+        y_max = center_y + half_height
+        
+        real = x_min + x_frac * (2 * half_width)
+        imag = y_max - y_frac * (2 * half_height)
+        
+        return np.complex64(real + 1j * imag)
+    
+    def to_viewport_plane(self, z: np.complex64, center_x, center_y, half_width, half_height) -> np.ndarray:
+        real = z.real
+        imag = z.imag
+        # Inverse mapping from complex plane to normalized coordinates
+        x_frac = (real - center_x + half_width) / (2 * half_width)
+        y_frac = (center_y + half_height - imag) / (2 * half_height)
+        # Convert to screen pixel coordinates
+        x = x_frac * self.__size[0]
+        y = y_frac * self.__size[1]
+        return np.array([x, y], dtype=float)
 
 
 class FractalZoomerUI:

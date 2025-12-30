@@ -69,6 +69,15 @@ class FractalZoomerUI:
         self.burning_ship = BurningShipSet(max_iter=self.max_iter)
         self.viewport = Viewport(W, H)
         
+        #Panning 
+        self.is_panning = False
+        self.pan_start_x = 0
+        self.pan_start_y = 0
+        self.pan_start_center_x = 0
+        self.pan_start_center_y = 0
+        self.pan_start_half_width = 0
+        self.pan_start_half_height = 0
+        
         # Setup UI
         self.setup_ui()
         self.render_fractal()

@@ -77,7 +77,7 @@ class FractalZoomerUI:
         self.pan_start_center_y = 0
         self.pan_start_half_width = 0
         self.pan_start_half_height = 0
-        
+
         # Setup UI
         self.setup_ui()
         self.render_fractal()
@@ -88,6 +88,11 @@ class FractalZoomerUI:
         self.canvas.pack(pady=10)
         self.canvas.bind("<Button-1>", self.zoom_in)
         self.canvas.bind("<Button-3>", self.zoom_out)
+
+        #Canvas Panning
+        self.canvas.bind("<Button-2>", self.start_pan)
+        self.canvas.bind("<B2-Motion>", self.pan_move)
+        self.canvas.bind("<ButtonRelease-2>", self.end_pan)
         
         # Control frame
         control_frame = tk.Frame(self.root)
@@ -120,8 +125,8 @@ class FractalZoomerUI:
         
         # Instructions
         instructions = tk.Label(self.root, 
-                                text="Left-click to zoom in • Right-click to zoom out",
-                                font=('Arial', 10, 'italic'), fg='gray')
+                        text="Left: zoom in • Right: zoom out • Middle: pan",
+                        font=('Arial', 10, 'italic'), fg='gray')
         instructions.pack(pady=5)
     
     def render_fractal(self):
@@ -130,33 +135,34 @@ class FractalZoomerUI:
         x_max = self.center_x + self.half_width
         y_min = self.center_y - self.half_height
         y_max = self.center_y + self.half_height
-        
+    
         # Create coordinate arrays
-        x_coords = np.linspace(x_min, x_max, W)
-        y_coords = np.linspace(y_max, y_min, H)
-        
-        # Create image array
-        img_array = np.zeros((H, W), dtype=np.uint8)
-        
-        # Select fractal
+        x_coords = np.linspace(x_min, x_max, W, dtype=np.float32)
+        y_coords = np.linspace(y_max, y_min, H, dtype=np.float32)
+    
+        # Create meshgrid - vectorized coordinate creation
+        X, Y = np.meshgrid(x_coords, y_coords)
+        C = X + 1j * Y  # Complex array of all points
+        C = C.astype(np.complex64)
+    
+        # Select fractal and compute ALL points at once
         if self.fractal_type == "mandelbrot":
-            fractal = self.mandelbrot
+            Z_final = self.mandelbrot.compute_array(C)
         elif self.fractal_type == "julia":
-            fractal = self.julia
+            Z_final = self.julia.compute_array(C)
         else:
-            fractal = self.burning_ship
-        
-        # Calculate fractal
-        for i in range(H):
-            for j in range(W):
-                iterations = fractal.iterations(x_coords[j], y_coords[i])
-                img_array[i, j] = int(255 * iterations / self.max_iter)
-        
+            Z_final = self.burning_ship.compute_array(C)
+    
+        # Convert to image - vectorized operations
+        magnitude = np.abs(Z_final)
+        img_array = np.clip(magnitude * 50, 0, 255).astype(np.uint8)
+
         # Create and display image
         img = Image.fromarray(img_array, mode='L')
         self.photo = ImageTk.PhotoImage(img)
+        self.canvas.delete("all")  # Clear canvas before drawing
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
-        
+    
         # Update info label
         zoom_level = 3.5 / (2 * self.half_width)
         self.info_label.config(
@@ -165,40 +171,79 @@ class FractalZoomerUI:
         )
     
     def zoom_in(self, event):
-        click_x, click_y = screen_to_complex(
+        click_complex = self.viewport.to_complex_plane(
             event.x, event.y,
             self.center_x, self.center_y,
             self.half_width, self.half_height
         )
         
         zoom_factor = 0.9
-        self.center_x = click_x
-        self.center_y = click_y
+        self.center_x = click_complex.real
+        self.center_y = click_complex.imag
         self.half_width *= zoom_factor
         self.half_height *= zoom_factor
-        
+    
         self.render_fractal()
     
     def zoom_out(self, event):
-        click_x, click_y = screen_to_complex(
+        click_complex = self.viewport.to_complex_plane(
             event.x, event.y,
             self.center_x, self.center_y,
             self.half_width, self.half_height
         )
         
         zoom_factor = 1.0 / 0.9
-        self.center_x = click_x
-        self.center_y = click_y
+        self.center_x = click_complex.real
+        self.center_y = click_complex.imag
         self.half_width *= zoom_factor
         self.half_height *= zoom_factor
-        
+    
         self.render_fractal()
+
+    #Panning function
+    def start_pan(self, event):
+        """Start panning operation."""
+        self.is_panning = True
+        self.pan_start_x = event.x
+        self.pan_start_y = event.y
+        self.pan_start_center_x = self.center_x
+        self.pan_start_center_y = self.center_y
+        self.pan_start_half_width = self.half_width
+        self.pan_start_half_height = self.half_height
+
+    def pan_move(self, event):
+        """Update view during panning."""
+        if not self.is_panning:
+            return
+    
+        # Calculate pixel displacement
+        dx_pixels = event.x - self.pan_start_x
+        dy_pixels = event.y - self.pan_start_y
+    
+        # Convert pixel displacement to complex plane displacement
+        # Note: moving mouse RIGHT (positive dx) should move view LEFT (negative change in center_x)
+        dx_complex = -dx_pixels * (2 * self.pan_start_half_width) / W
+        dy_complex = dy_pixels * (2 * self.pan_start_half_height) / H
+    
+        # Update center
+        self.center_x = self.pan_start_center_x + dx_complex
+        self.center_y = self.pan_start_center_y + dy_complex
+    
+        # Keep zoom level locked
+        self.half_width = self.pan_start_half_width
+        self.half_height = self.pan_start_half_height
+    
+        self.render_fractal()
+
+    def end_pan(self, event):
+        """End panning operation."""
+        self.is_panning = False
     
     def update_iterations(self, value):
         self.max_iter = int(value)
-        self.mandelbrot.max_iter = self.max_iter
-        self.julia.max_iter = self.max_iter
-        self.burning_ship.max_iter = self.max_iter
+        self.mandelbrot = MandelbrotSet(max_iter=self.max_iter)
+        self.julia = JuliaSet(JULIA_CR, JULIA_CI, max_iter=self.max_iter)
+        self.burning_ship = BurningShipSet(max_iter=self.max_iter)
         self.render_fractal()
     
     def change_fractal(self):
@@ -228,4 +273,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

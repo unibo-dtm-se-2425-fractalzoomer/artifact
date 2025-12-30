@@ -50,8 +50,6 @@ class Viewport:
 
 class FractalZoomerUI:
     def __init__(self, root):
-        if any(dep is None for dep in (Image, ImageTk, np)):
-            raise ImportError("Pillow and NumPy are required to run the Fractal Zoomer UI")
         self.root = root
         self.root.title("Fractal Zoomer")
         
@@ -69,6 +67,7 @@ class FractalZoomerUI:
         self.mandelbrot = MandelbrotSet(max_iter=self.max_iter)
         self.julia = JuliaSet(JULIA_CR, JULIA_CI, max_iter=self.max_iter)
         self.burning_ship = BurningShipSet(max_iter=self.max_iter)
+        self.viewport = Viewport(W, H)
         
         # Setup UI
         self.setup_ui()

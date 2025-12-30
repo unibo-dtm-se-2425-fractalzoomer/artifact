@@ -1,13 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
-try:
-    from PIL import Image, ImageTk
-except ImportError:  # pragma: no cover - optional dependency for tests
-    Image = ImageTk = None
-try:
-    import numpy as np
-except ImportError:  # pragma: no cover - optional dependency for tests
-    np = None
+from PIL import Image, ImageTk
+import numpy as np
 import sys
 import os
 

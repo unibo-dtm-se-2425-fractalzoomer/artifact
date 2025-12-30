@@ -1,8 +1,8 @@
 import numpy as np
-# Default constant for Julia set (c = -0.4 + 0.6i) Dendrite shape
+
 JULIA_CR   = -0.4
 JULIA_CI   = 0.6
-class JuliaSet:
+class JuliaSet: #Pure Julia Set math function. We use the dendrite shape as default: (c = -0.4 + 0.6i)
     """Pure Julia-set math and helpers (no UI)."""
 
     def __init__(self, c_real, c_imag, max_iter=256):

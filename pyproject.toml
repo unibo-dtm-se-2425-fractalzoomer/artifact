@@ -3,12 +3,12 @@ name = "fractalzoomer"
 version = "0.1.0"
 description = "A fractal exploration tool supporting Mandelbrot, Julia, and Burning Ship sets."
 authors = [
-    {name = "Luca Mambelli", email = "luca.mambelli2@studio.unibo.it>"},
-    {name = "Diana Lastovetska", email = "diana.lastovetska@studio.unibo.it>"}
+    {name = "Luca Mambelli", email = "luca.mambelli2@studio.unibo.it"},
+    {name = "Diana Lastovetska", email = "diana.lastovetska@studio.unibo.it"}
 ]
 license = {text = "Apache-2.0"}
 readme = "README.md"
-requires-python = "^3.11"
+requires-python = ">=3.11"
 dependencies = [
     "numpy (>=2.4.0,<3.0.0)",
     "pillow (>=12.0.0,<13.0.0)"
@@ -22,15 +22,44 @@ dev = [
     "poethepoet (>=0.24.0,<2.0.0)"
 ]
 
-
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+[tool.poetry.packages]
+include = "fractalzoomer"
+from = "src"
+
+[tool.poetry.scripts]
+fractalzoomer = "fractalzoomer.ui.app:main"
+
 [tool.poe.tasks]
 test = "pytest"
-coverage = "pytest --cov=src"
+coverage = "pytest --cov=src/fractalzoomer"
 coverage-report = "coverage report"
 coverage-html = "coverage html"
 mypy = "mypy src"
 compile = "python -m compileall src"
+run = "python -m fractalzoomer.ui.app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+[tool.coverage.run]
+source = ["src/fractalzoomer"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]

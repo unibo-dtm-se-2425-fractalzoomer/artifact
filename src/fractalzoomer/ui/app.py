@@ -12,7 +12,13 @@ try:
         JuliaSet,
         BurningShipSet,
         DEFAULT_JULIA_C_REAL,
-        DEFAULT_JULIA_C_IMAG
+        DEFAULT_JULIA_C_IMAG,
+    )
+    from fractalzoomer.ui.coordinates import (
+        screen_to_complex,
+        Viewport,
+        DEFAULT_WIDTH,
+        DEFAULT_HEIGHT,
     )
 except ModuleNotFoundError:
     # When running directly (python app.py), add src to path
@@ -26,138 +32,24 @@ except ModuleNotFoundError:
         JuliaSet,
         BurningShipSet,
         DEFAULT_JULIA_C_REAL,
-        DEFAULT_JULIA_C_IMAG
+        DEFAULT_JULIA_C_IMAG,
+    )
+    from fractalzoomer.ui.coordinates import (
+        screen_to_complex,
+        Viewport,
+        DEFAULT_WIDTH,
+        DEFAULT_HEIGHT,
     )
 
 # Display constants
-W, H = 600, 400
+W, H = DEFAULT_WIDTH, DEFAULT_HEIGHT
 MAX_ITER = 128
 
 
-def screen_to_complex(
-    x: float,
-    y: float,
-    center_x: float,
-    center_y: float,
-    half_width: float,
-    half_height: float,
-    width: int = W,
-    height: int = H
-) -> tuple[float, float]:
-    """
-    Convert screen coordinates to complex plane coordinates.
-    
-    Args:
-        x: Screen x coordinate (pixels from left).
-        y: Screen y coordinate (pixels from top).
-        center_x: Real part of the viewport center.
-        center_y: Imaginary part of the viewport center.
-        half_width: Half-width of the viewport in complex plane units.
-        half_height: Half-height of the viewport in complex plane units.
-        width: Screen width in pixels.
-        height: Screen height in pixels.
-        
-    Returns:
-        Tuple of (real, imaginary) coordinates in the complex plane.
-    """
-    x_frac = x / width
-    y_frac = y / height
-    
-    x_min = center_x - half_width
-    y_max = center_y + half_height
-    
-    real = x_min + x_frac * (2 * half_width)
-    imag = y_max - y_frac * (2 * half_height)
-    
-    return real, imag
-
-
-# Handles coordinate transformation between screen and complex plane.
-class Viewport:
-    
-    def __init__(self, width: int, height: int):
-        """
-        Initialize the viewport.
-        
-        Args:
-            width: Screen width in pixels.
-            height: Screen height in pixels.
-        """
-        self._size = np.array([width, height], dtype=float)
-        self._zoom = 1.0 / max(width, height)
-        self.viewport_center = self._size / 2
-
-    def to_complex_plane(
-        self,
-        x: float,
-        y: float,
-        center_x: float,
-        center_y: float,
-        half_width: float,
-        half_height: float
-    ) -> np.complex64:
-        """
-        Convert screen coordinates to a complex number.
-        
-        Args:
-            x: Screen x coordinate.
-            y: Screen y coordinate.
-            center_x: Viewport center real part.
-            center_y: Viewport center imaginary part.
-            half_width: Half-width in complex units.
-            half_height: Half-height in complex units.
-            
-        Returns:
-            Complex number representing the point in the complex plane.
-        """
-        real, imag = screen_to_complex(
-            x, y, center_x, center_y, half_width, half_height,
-            int(self._size[0]), int(self._size[1])
-        )
-        return np.complex64(real + 1j * imag)
-
-    def to_viewport_plane(
-        self,
-        z: np.complex64,
-        center_x: float,
-        center_y: float,
-        half_width: float,
-        half_height: float
-    ) -> np.ndarray:
-        """
-        Convert a complex number to screen coordinates.
-        
-        Args:
-            z: Complex number in the complex plane.
-            center_x: Viewport center real part.
-            center_y: Viewport center imaginary part.
-            half_width: Half-width in complex units.
-            half_height: Half-height in complex units.
-            
-        Returns:
-            Array [x, y] of screen coordinates.
-        """
-        real = z.real
-        imag = z.imag
-        # Inverse mapping from complex plane to normalized coordinates
-        x_frac = (real - center_x + half_width) / (2 * half_width)
-        y_frac = (center_y + half_height - imag) / (2 * half_height)
-        # Convert to screen pixel coordinates
-        x = x_frac * self._size[0]
-        y = y_frac * self._size[1]
-        return np.array([x, y], dtype=float)
-
-
-# Main application window
 class FractalZoomerUI:
+    #Application window for fractal viewing and interaction
     
     def __init__(self, root: tk.Tk):
-        """
-        Initialize the Fractal Zoomer UI.
-        
-        Args:
-            root: The Tkinter root window.
-        """
         self.root = root
         self.root.title("Fractal Zoomer")
         
@@ -174,8 +66,8 @@ class FractalZoomerUI:
         # Create fractal objects
         self.mandelbrot = MandelbrotSet(max_iter=self.max_iter)
         self.julia = JuliaSet(
-            c_real = DEFAULT_JULIA_C_REAL,
-            c_imag = DEFAULT_JULIA_C_IMAG,
+            c_real=DEFAULT_JULIA_C_REAL,
+            c_imag=DEFAULT_JULIA_C_IMAG,
             max_iter=self.max_iter
         )
         self.burning_ship = BurningShipSet(max_iter=self.max_iter)
@@ -270,6 +162,7 @@ class FractalZoomerUI:
         instructions.pack(pady=5)
 
     def render_fractal(self) -> None:
+        # Render the current fractal view
         # Calculate bounds
         x_min = self.center_x - self.half_width
         x_max = self.center_x + self.half_width
@@ -308,8 +201,9 @@ class FractalZoomerUI:
             text=f"Center: ({self.center_x:.6f}, {self.center_y:.6f}) | "
                  f"Zoom: {zoom_level:.2f}x | Iterations: {self.max_iter}"
         )
-# Zoom in effect on left click
+
     def _zoom_in(self, event: tk.Event) -> None:
+        """Handle zoom in on left click."""
         click_complex = self.viewport.to_complex_plane(
             event.x, event.y,
             self.center_x, self.center_y,
@@ -323,7 +217,7 @@ class FractalZoomerUI:
         self.half_height *= zoom_factor
     
         self.render_fractal()
-# Zoom out on right click
+
     def _zoom_out(self, event: tk.Event) -> None:
         click_complex = self.viewport.to_complex_plane(
             event.x, event.y,
@@ -338,7 +232,7 @@ class FractalZoomerUI:
         self.half_height *= zoom_factor
     
         self.render_fractal()
-#Starts panning operations
+
     def _start_pan(self, event: tk.Event) -> None:
         self.is_panning = True
         self.pan_start_x = event.x
@@ -347,7 +241,7 @@ class FractalZoomerUI:
         self.pan_start_center_y = self.center_y
         self.pan_start_half_width = self.half_width
         self.pan_start_half_height = self.half_height
-# Update pan movements
+
     def _pan_move(self, event: tk.Event) -> None:
         if not self.is_panning:
             return
@@ -371,16 +265,19 @@ class FractalZoomerUI:
         self.render_fractal()
 
     def _end_pan(self, event: tk.Event) -> None:
+        # End panning
         self.is_panning = False
 
     def _update_iterations(self, value: str) -> None:
+        # Update iteration count from slider
         self.max_iter = int(value)
         self.mandelbrot.set_parameters(max_iter=self.max_iter)
         self.julia.set_parameters(max_iter=self.max_iter)
         self.burning_ship.set_parameters(max_iter=self.max_iter)
         self.render_fractal()
-# Fractal displayed selection
+
     def _change_fractal(self) -> None:
+        # Change fractal type based on selection
         self.fractal_type = self.fractal_var.get()
         
         # Reset view to appropriate defaults

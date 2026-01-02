@@ -1,11 +1,18 @@
+"""Tests for coordinate mapping functions."""
+
 import math
 import pytest
-from fractalzoomer.ui.app import screen_to_complex, W, H
+from fractalzoomer.ui.coordinates import screen_to_complex, DEFAULT_WIDTH, DEFAULT_HEIGHT
 
-# Testing screen to complex plane
+# Use default dimensions for tests
+W, H = DEFAULT_WIDTH, DEFAULT_HEIGHT
+
+
 class TestScreenToComplex:
-#Test that top-left screen corner maps to top-left of complex plane.
+    """Test suite for screen_to_complex function."""
+
     def test_top_left_corner(self):
+        """Test that top-left screen corner maps to top-left of complex plane."""
         center_x, center_y = -0.5, 0.0
         half_width, half_height = 1.75, 1.0
 
@@ -15,8 +22,9 @@ class TestScreenToComplex:
 
         assert math.isclose(real, center_x - half_width)
         assert math.isclose(imag, center_y + half_height)
-#Test that bottom-right screen corner maps to bottom-right of complex plane.
+
     def test_bottom_right_corner(self):
+        """Test that bottom-right screen corner maps to bottom-right of complex plane."""
         center_x, center_y = -0.5, 0.0
         half_width, half_height = 1.75, 1.0
 
@@ -26,8 +34,9 @@ class TestScreenToComplex:
 
         assert math.isclose(real, center_x + half_width)
         assert math.isclose(imag, center_y - half_height)
-# Test that screen center maps to viewport center.
+
     def test_center(self):
+        """Test that screen center maps to viewport center."""
         center_x, center_y = -0.5, 0.0
         half_width, half_height = 1.75, 1.0
 
@@ -37,8 +46,9 @@ class TestScreenToComplex:
 
         assert math.isclose(real, center_x, rel_tol=1e-5)
         assert math.isclose(imag, center_y, rel_tol=1e-5)
-#Test with custom screen dimensions.
+
     def test_custom_dimensions(self):
+        """Test with custom screen dimensions."""
         center_x, center_y = 0.0, 0.0
         half_width, half_height = 2.0, 2.0
         custom_w, custom_h = 100, 100

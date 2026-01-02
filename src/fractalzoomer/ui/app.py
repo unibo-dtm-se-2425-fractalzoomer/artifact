@@ -332,8 +332,8 @@ class FractalZoomerUI:
         )
         
         zoom_factor = 1.0 / 0.9
-        self.center_x = click_complex.real
-        self.center_y = click_complex.imag
+        self.center_x = float(click_complex.real)
+        self.center_y = float(click_complex.imag)
         self.half_width *= zoom_factor
         self.half_height *= zoom_factor
     

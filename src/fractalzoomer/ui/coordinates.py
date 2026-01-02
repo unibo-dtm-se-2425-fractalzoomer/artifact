@@ -162,7 +162,7 @@ class Viewport:
             Array [x, y] of screen coordinates.
         """
         x, y = complex_to_screen(
-            z.real, z.imag, center_x, center_y, half_width, half_height,
+            float(z.real), float(z.imag), center_x, center_y, half_width, half_height,
             self._width, self._height
         )
         return np.array([x, y], dtype=float)

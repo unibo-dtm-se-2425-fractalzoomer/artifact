@@ -1,0 +1,16 @@
+{
+  "name": "fractalzoomer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A fractal exploration tool supporting Mandelbrot, Julia, and Burning Ship sets.",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "semantic-release": "^24.0.0",
+    "@semantic-release/exec": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
+    "@semantic-release/github": "^10.0.0",
+    "semantic-release-preconfigured-conventional-commits": "^1.1.0"
+  }
+}

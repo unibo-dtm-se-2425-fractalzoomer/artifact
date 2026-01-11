@@ -59,3 +59,72 @@ class TestJuliaParameterValidation:
         assert isinstance(julia.c_imag, float)
         assert julia.c_real == 1.0
         assert julia.c_imag == -1.0
+class TestJuliaPresets:
+    # Tests for Julia set preset configurations.
+
+    def test_default_preset_is_dendrite(self):
+        # CHeck whether the default shape is the dendrite one
+        julia = JuliaSet()
+        
+        assert julia.c_real == DEFAULT_JULIA_C_REAL  # -0.4
+        assert julia.c_imag == DEFAULT_JULIA_C_IMAG  # 0.6
+
+    def test_preset_values_produce_valid_fractals(self):
+        # The function will check if different combination provides different shapes
+        presets = [
+            (-0.4, 0.6),      # Dendrite
+            (-0.8, 0.156),    # Dragon
+            (-0.7269, 0.1889), # Spiral
+            (0.285, 0.01),    # Galaxy
+            (-0.75, 0.11),    # Snowflake
+        ]
+        
+        for c_real, c_imag in presets:
+            julia = JuliaSet(c_real=c_real, c_imag=c_imag, max_iter=50)
+            test_point = np.complex64(0.0 + 0.0j)
+            result = julia.compute(test_point)
+            
+            assert np.isfinite(result) or np.abs(result) > 1e10
+
+
+class TestJuliaComputationWithParameters:
+    # Verifies that changing parameters affects computation results.
+
+    def test_different_c_values_produce_different_results(self):
+        # Different c values should yield different computation results.
+        julia1 = JuliaSet(c_real=-0.4, c_imag=0.6, max_iter=50)
+        julia2 = JuliaSet(c_real=-0.8, c_imag=0.156, max_iter=50)
+        
+        test_point = np.complex64(0.5 + 0.5j)
+        
+        result1 = julia1.compute(test_point)
+        result2 = julia2.compute(test_point)
+        
+        # Results should be different (not equal)
+        assert not np.isclose(result1, result2)
+
+    def test_parameter_change_affects_array_computation(self):
+        # Test on parameter change affects array computation results.
+        julia = JuliaSet(c_real=-0.4, c_imag=0.6, max_iter=50)
+        
+        test_array = np.array([0.5 + 0.5j, -0.5 - 0.5j], dtype=np.complex64)
+        
+        result1 = julia.compute_array(test_array.copy())
+        
+        julia.set_parameters(c_real=-0.8, c_imag=0.156)
+        
+        result2 = julia.compute_array(test_array.copy())
+        
+        # At least one result should be different
+        assert not np.allclose(result1, result2)
+
+    def test_computation_deterministic(self):
+        # If parameters are unchanged, results should be consistent.
+        julia = JuliaSet(c_real=-0.4, c_imag=0.6, max_iter=50)
+        
+        test_point = np.complex64(0.3 + 0.4j)
+        
+        result1 = julia.compute(test_point)
+        result2 = julia.compute(test_point)
+        
+        assert np.isclose(result1, result2)

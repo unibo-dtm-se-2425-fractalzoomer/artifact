@@ -128,3 +128,31 @@ class TestJuliaComputationWithParameters:
         result2 = julia.compute(test_point)
         
         assert np.isclose(result1, result2)
+class TestJuliaParameterBounds:
+    # This test class checks behavior at parameter bounds.
+
+    def test_extreme_c_values_dont_crash(self):
+        # With large results, the computation should not crash.
+        julia = JuliaSet(max_iter=10)
+        
+        # Very large c value
+        julia.set_parameters(c_real=10.0, c_imag=10.0)
+        
+        test_point = np.complex64(0.0 + 0.0j)
+        
+        # Should not raise exception
+        result = julia.compute(test_point)
+        # Result may be inf or very large, but shouldn't crash
+        assert result is not None
+
+    def test_zero_c_produces_simple_iteration(self):
+        # test for c = 0, the iteration is simply z^2
+        julia = JuliaSet(c_real=0.0, c_imag=0.0, max_iter=3)
+        
+        # Starting at z = 2: 2^2 = 4, 4^2 = 16, 16^2 = 256
+        test_point = np.complex64(2.0 + 0.0j)
+        result = julia.compute(test_point)
+        
+        # After 3 iterations: 2^(2^3) = 2^8 = 256
+        assert np.isclose(result.real, 256.0, rtol=1e-3)
+        assert np.isclose(result.imag, 0.0, atol=1e-5)

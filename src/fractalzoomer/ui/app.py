@@ -450,6 +450,9 @@ class FractalZoomerUI:
         self.half_width = 1.75
         self.half_height = 1.0
         self.render_fractal()
-
+def main():
+    root = tk.Tk()
+    app = FractalZoomerUI(root)
+    root.mainloop()
 if __name__ == "__main__":
     main()

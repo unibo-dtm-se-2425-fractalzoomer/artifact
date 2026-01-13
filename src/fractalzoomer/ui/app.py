@@ -11,6 +11,7 @@ from fractalzoomer.core import (
     DEFAULT_JULIA_C_IMAG,
 )
 from fractalzoomer.ui.coordinates import Viewport
+from fractalzoomer.utils.exporter import FractalExporter
 
 # Constants
 W, H = 600, 400

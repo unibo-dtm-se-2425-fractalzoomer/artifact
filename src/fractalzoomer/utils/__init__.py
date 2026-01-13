@@ -1,2 +1,3 @@
 # Utility model for fractalzoomer. Implement exporting application
-__all__ = []
+from fractalzoomer.utils.exporter import FractalExporter
+__all__ = ["FractalExporter"]

@@ -69,3 +69,27 @@ class TestFractalExporter:
         assert 'PNG' in supported_formats
         assert 'JPEG' in supported_formats
     
+    class TestExportMetadata:
+        # Test suit for exporting metadata with fractal images
+
+        @pytest.fixture
+        def exporter(self):
+            # Instantiate the FractalExporter class
+            from src.fractalzoomer.utils.exporter import FractalExporter
+            return FractalExporter()
+        
+        def test_export_with_metadata(self, exporter):
+            data = np.zeros((50, 50), dtype=np.uint8)
+            img = exporter.array_to_image(data)
+            metadata = {
+            'fractal_type': 'mandelbrot',
+            'center_x': -0.5,
+            'center_y': 0.0,
+            'zoom': 1.0,
+            'max_iterations': 100
+        }
+            with tempfile.TemporaryDirectory() as tmpdir:
+            filepath = Path(tmpdir) / "test_with_meta.png"
+            exporter.save(img, str(filepath), metadata=metadata)
+            assert filepath.exists() 
+    

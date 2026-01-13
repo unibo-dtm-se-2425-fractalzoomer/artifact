@@ -89,7 +89,7 @@ class TestFractalExporter:
             'max_iterations': 100
         }
             with tempfile.TemporaryDirectory() as tmpdir:
-            filepath = Path(tmpdir) / "test_with_meta.png"
-            exporter.save(img, str(filepath), metadata=metadata)
-            assert filepath.exists() 
+                filepath = Path(tmpdir) / "fractal_with_metadata.png"
+                exporter.save(img, str(filepath), metadata=metadata)
+                assert filepath.exists() 
     

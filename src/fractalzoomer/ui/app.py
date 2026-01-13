@@ -60,6 +60,8 @@ class FractalZoomerUI:
         )
         self.burning_ship = BurningShipSet(max_iter=self.max_iter)
         self.viewport = Viewport(W, H)
+        self.exporter = FractalExporter()
+        self.current_img_array = None  # Store current fractal data for export
         
         # Panning state
         self.is_panning = False
@@ -200,7 +202,31 @@ class FractalZoomerUI:
         # Info label
         self.info_label = tk.Label(self.root, text="", font=('Arial', 9))
         self.info_label.pack()
+        button_frame = tk.Frame(self.root)
+        button_frame.pack(pady=5) # Export button
         
+        # Save Image button
+        self.save_button = tk.Button(
+            button_frame,
+            text="💾 Save Image",
+            command=self.export_image,
+            font=('Arial', 10),
+            padx=15,
+            pady=5
+        )
+        self.save_button.pack(side=tk.LEFT, padx=5)
+        
+        # Reset View button
+        self.reset_button = tk.Button(
+            button_frame,
+            text="🔄 Reset View",
+            command=self.reset_view,
+            font=('Arial', 10),
+            padx=15,
+            pady=5
+        )
+        self.reset_button.pack(side=tk.LEFT, padx=5)   
+
         # Instructions
         instructions = tk.Label(
             self.root, 
@@ -332,6 +358,7 @@ class FractalZoomerUI:
         # Convert to image - vectorized operations
         magnitude = np.abs(Z_final)
         img_array = np.clip(magnitude * 50, 0, 255).astype(np.uint8)
+        self.current_img_array = img_array  # Store for potential export
 
         # Create and display image
         img = Image.fromarray(img_array, mode='L')
@@ -451,6 +478,56 @@ class FractalZoomerUI:
         self.half_width = 1.75
         self.half_height = 1.0
         self.render_fractal()
+
+def export_image(self):
+    # Open save dialog to export current fractal image
+    if self.current_img_array is None:
+        messagebox.showwarning("Missing image", "No fractal image to export.")
+        return
+    
+    filetypes = [
+        ("PNG Image", "*.png"),
+        ("JPEG Image", "*.jpg;*.jpeg"),
+        ("BMP Image", "*.bmp"),
+        ("All files", "*.*")
+    ]
+    
+    defautl_name = f"{self.fractal_type}_fractal.png"
+    filepath = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=filetypes,
+            initialfile=default_name,
+            title="Save Fractal Image"
+        )
+    if filepath:
+        # Prepare metadata
+        try:
+            metadata = {
+                'fractal_type': self.fractal_type,
+                'center_x': self.center_x,
+                'center_y': self.center_y,
+                'zoom': 3.5 / (2 * self.half_width),
+                'max_iterations': self.max_iter
+            }
+            if self.fractal_type == "julia":
+                metadata['julia_c_real'] = self.julia_c_real
+                metadata['julia_c_imag'] = self.julia_c_imag
+            
+            # Export using FractalExporter
+            self.exporter.export_fractal(
+                    self.current_img_array,
+                    filepath,
+                    metadata=metadata
+                )
+            
+            messagebox.showinfo("Success", f"Image saved to:\n{filepath}")
+        
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save image:\n{str(e)}")
+def reset_view(self):
+    # Reset view to default parameters
+    self.change_fractal()
+
 def main():
     root = tk.Tk()
     app = FractalZoomerUI(root)

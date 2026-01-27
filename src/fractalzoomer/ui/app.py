@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageOps
 import numpy as np
 
 from fractalzoomer.core import (
@@ -361,6 +361,8 @@ class FractalZoomerUI:
 
         # Create and display image
         img = Image.fromarray(img_array, mode='L')
+        img = ImageOps.colorize(img, black="black", mid = "purple", white="yellow")
+        img = ImageOps.autocontrast(img, cutoff=1)
         self.photo = ImageTk.PhotoImage(img)
         self.canvas.delete("all")
         self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)

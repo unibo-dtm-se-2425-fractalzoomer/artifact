@@ -55,6 +55,9 @@ ignore_missing_imports = true
 [tool.coverage.run]
 source = ["src/fractalzoomer"]
 branch = true
+omit = [
+    "src/fractalzoomer/ui/app.py",  # Tkinter UI - tested manually
+]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -62,4 +65,5 @@ exclude_lines = [
     "def __repr__",
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
 ]

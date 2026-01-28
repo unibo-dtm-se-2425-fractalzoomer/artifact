@@ -74,8 +74,8 @@ class TestFractalExporter:
             exporter.save(img, str(filepath))
 
             assert filepath.exists()
-            loaded = Image.open(filepath)
-            assert loaded.size == img.size
+            with Image.open(filepath) as loaded:
+                assert loaded.size == img.size
 
     def test_save_creates_jpeg_file(self, exporter, sample_fractal_data):
         # Test that the save method creates a JPEG file.
@@ -86,8 +86,8 @@ class TestFractalExporter:
 
             assert filepath.exists()
             # Verify it's a valid image
-            loaded = Image.open(filepath)
-            assert loaded is not None
+            with Image.open(filepath) as loaded:
+                assert loaded is not None
 
     def test_save_creates_bmp_file(self, exporter, sample_fractal_data):
         # Test that the save method creates a BMP file.
@@ -123,8 +123,8 @@ class TestFractalExporter:
             exporter.export_fractal(sample_fractal_data, str(filepath))
 
             assert filepath.exists()
-            loaded = Image.open(filepath)
-            assert loaded.size == (sample_fractal_data.shape[1], sample_fractal_data.shape[0])
+            with Image.open(filepath) as loaded:
+                assert loaded.size == (sample_fractal_data.shape[1],sample_fractal_data.shape[0])
 
 
 class TestExportMetadata:
@@ -156,10 +156,10 @@ class TestExportMetadata:
 
             assert filepath.exists()
             # Verify metadata was saved
-            loaded = Image.open(filepath)
+            with Image.open(filepath) as loaded:
             # PNG metadata is stored in info dict
-            assert 'fractal_type' in loaded.info
-            assert loaded.info['fractal_type'] == 'mandelbrot'
+                assert 'fractal_type' in loaded.info
+                assert loaded.info['fractal_type'] == 'mandelbrot'
 
     def test_export_fractal_with_metadata(self, exporter, sample_data):
         # Test export_fractal convenience method with metadata.
@@ -177,8 +177,8 @@ class TestExportMetadata:
             )
 
             assert filepath.exists()
-            loaded = Image.open(filepath)
-            assert loaded.info['fractal_type'] == 'julia'
+            with Image.open(filepath) as loaded:
+                assert loaded.info['fractal_type'] == 'julia'
 
     def test_metadata_converts_values_to_string(self, exporter, sample_data):
         # Test that numeric metadata values are converted to strings.
@@ -191,10 +191,10 @@ class TestExportMetadata:
             img = exporter.array_to_image(sample_data)
             exporter.save(img, str(filepath), metadata=metadata)
 
-            loaded = Image.open(filepath)
+            with Image.open(filepath) as loaded:
             # Values should be stored as strings
-            assert loaded.info['zoom'] == '2.5'
-            assert loaded.info['iterations'] == '100'
+                assert loaded.info['zoom'] == '2.5'
+                assert loaded.info['iterations'] == '100'
 
     def test_jpeg_ignores_metadata(self, exporter, sample_data):
         # Test that JPEG files are saved without error even with metadata.

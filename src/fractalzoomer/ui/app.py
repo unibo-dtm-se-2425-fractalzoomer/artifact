@@ -81,12 +81,14 @@ class FractalZoomerUI:
         self.canvas = tk.Canvas(self.root, width=W, height=H, bg='black')
         self.canvas.pack(pady=10)
         self.canvas.bind("<Button-1>", self.zoom_in)
-        self.canvas.bind("<Button-3>", self.zoom_out)
+        self.canvas.bind("<Button-2>", self.zoom_out)
 
         # Canvas Panning
-        self.canvas.bind("<Button-2>", self.start_pan)
-        self.canvas.bind("<B2-Motion>", self.pan_move)
-        self.canvas.bind("<ButtonRelease-2>", self.end_pan)
+        # Existing middle mouse pan (keep these)
+        self.canvas.bind("<Control-Button-1>", self.start_pan)
+        self.canvas.bind("<Control-B1-Motion>", self.pan_move)
+        self.canvas.bind("<Control-ButtonRelease-1>", self.end_pan)
+        
 
         # Control frame
         control_frame = tk.Frame(self.root)
@@ -229,7 +231,7 @@ class FractalZoomerUI:
         # Instructions
         instructions = tk.Label(
             self.root,
-            text="Left-click: zoom in • Right-click: zoom out • Middle-click: pan",
+            text="Left-click: zoom in • Right-click: zoom out • Middle-click or Ctrl+drag: pan",
             font=('Arial', 10, 'italic'), fg='gray'
         )
         instructions.pack(pady=5)

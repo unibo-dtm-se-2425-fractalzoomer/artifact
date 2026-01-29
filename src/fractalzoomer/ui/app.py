@@ -82,12 +82,14 @@ class FractalZoomerUI:
         self.canvas.pack(pady=10)
         self.canvas.bind("<Button-1>", self.zoom_in)
         self.canvas.bind("<Button-2>", self.zoom_out)
+        self.canvas.bind("<Option-Button-1>", self.zoom_out)
 
         # Canvas Panning
         # Existing middle mouse pan (keep these)
         self.canvas.bind("<Control-Button-1>", self.start_pan)
         self.canvas.bind("<Control-B1-Motion>", self.pan_move)
         self.canvas.bind("<Control-ButtonRelease-1>", self.end_pan)
+        
         
 
         # Control frame

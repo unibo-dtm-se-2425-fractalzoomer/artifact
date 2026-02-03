@@ -1,6 +1,6 @@
 [project]
 name = "fractalzoomer"
-version = "0.1.0"
+version = "4.1.0"
 description = "A fractal exploration tool supporting Mandelbrot, Julia, and Burning Ship sets."
 authors = [
     {name = "Luca Mambelli", email = "luca.mambelli2@studio.unibo.it"},

@@ -60,6 +60,15 @@ fractalzoomer/
 The application supports python versions from 3.11+, and it is stable up to the latest version.
 The user can install the game directly from *GitHub* as follows
 
+---
+
+### PyPI Installation:
+```bash
+pip install fractalzoomer
+```
+
+---
+
 ### GitHub Installation
 #### 1. Clone the repository:
 ```bash
